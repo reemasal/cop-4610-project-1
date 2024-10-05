@@ -11,6 +11,7 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "synch.h"
 
 // testnum is set in main.cc
 int testnum = 1;
@@ -24,6 +25,40 @@ int testnum = 1;
 //	purposes.
 //----------------------------------------------------------------------
 
+
+#ifdef HW1_SEMAPHORES
+
+int SharedVariable;
+int numThreadsActive; // used to implement barrier upon completion
+
+Semaphore* semaphore = new Semaphore("SimpleThread Semaphore", 1);
+
+void SimpleThread(int which) {
+    int num, val;
+    for (num = 0; num < 5; num++) {
+        semaphore->P();
+        val = SharedVariable;
+	    printf("*** thread %d sees value %d\n", which, val);
+        currentThread->Yield();
+        SharedVariable = val + 1;
+        semaphore->V();
+        currentThread->Yield();
+    }
+
+    // Decrement numThreadsActive
+    numThreadsActive--;
+
+    // Check if numThreadsActive is zero; yield self while not
+    while(numThreadsActive != 0) {
+        currentThread->Yield();
+    }
+
+    val = SharedVariable;
+    printf("Thread %d sees final value %d\n", which, val);
+}
+
+#else
+
 void
 SimpleThread(int which)
 {
@@ -34,6 +69,8 @@ SimpleThread(int which)
         currentThread->Yield();
     }
 }
+
+#endif
 
 //----------------------------------------------------------------------
 // ThreadTest1
@@ -59,8 +96,6 @@ ThreadTest1()
 
 #ifdef HW1_SEMAPHORES
 
-int numThreadsActive; // used to implement barrier upon completion
-
 void
 ThreadTest(int n) {
     DEBUG('t', "Entering SimpleTest");
@@ -83,11 +118,11 @@ ThreadTest()
 {
     switch (testnum) {
     case 1:
-	ThreadTest1();
-	break;
+	    ThreadTest1();
+	    break;
     default:
-	printf("No test specified.\n");
-	break;
+	    printf("No test specified.\n");
+	    break;
     }
 }
 
