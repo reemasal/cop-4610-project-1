@@ -59,7 +59,11 @@ extern int testnum;
 
 // External functions used by this file
 
+#ifdef HW1_SEMAPHORES
+extern void ThreadTest(int n), Copy(char *unixFile, char *nachosFile);
+#else
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
+#endif
 extern void ElevatorTest(int numFloors, int numPersons);
 extern void Ping();
 extern void Print(char *file), PerformanceTest(void);
@@ -105,6 +109,8 @@ main(int argc, char **argv)
 
 #if defined(CHANGED) && defined(HW1_CONDITION)
 	Ping();
+#elif defined(HW1_SEMAPHORES)
+	ThreadTest(testnum);
 #else
     ThreadTest();
 #endif
@@ -112,8 +118,8 @@ main(int argc, char **argv)
 
 #if defined(CHANGED) && defined(HW1_ELEVATOR)
 	ElevatorTest(5, 5);
-#else
-    ThreadTest();
+// #else
+//     ThreadTest();
 #endif
 
 
