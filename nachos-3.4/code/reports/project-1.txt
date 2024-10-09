@@ -4,7 +4,6 @@ Reema Salem
 
 Exercise 1
 
-
 While running the threadtest program, each thread in the nachos command would output the same value, while incrementing the value by 1 until reaching 5, leaving the final value as seen as 5. 
 
 When incorporating the semaphores, as each thread would increment by 1, the value would increase by 1, while not having the same value from the previous thread, until all threads have ran 5 times. So for example, if the number of threads active are 4, the final value would be 20.
@@ -12,3 +11,5 @@ When incorporating the semaphores, as each thread would increment by 1, the valu
 Using -rs would randomize the execution sequence of the threads.
 
 Exercise 2
+
+Locks are similar to semaphores but differ when handling the threads. The main difference lies in the number of threads allowed to hold the resource at once. Locks hold one thread at a time, while semaphores can hold multiple.
