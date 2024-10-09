@@ -111,6 +111,8 @@ main(int argc, char **argv)
 	Ping();
 #elif defined(HW1_SEMAPHORES)
 	ThreadTest(testnum);
+#elif defined(HW1_LOCKS)
+	LockTest();
 #else
     ThreadTest();
 #endif
