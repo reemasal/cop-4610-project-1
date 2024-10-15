@@ -168,6 +168,8 @@ void Condition::Wait(Lock* conditionLock) {
     // check if calling thread holds the lock
     ASSERT(conditionLock->isHeldByCurrentThread());
 
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
     // Release the lock
     conditionLock->Release();
 
@@ -178,11 +180,14 @@ void Condition::Wait(Lock* conditionLock) {
     // Re-acquire the lock
     conditionLock->Acquire();
 
+    (void)interrupt->SetLevel(oldLevel);
 }
 void Condition::Signal(Lock* conditionLock) {
 
     // check if calling thread holds the lock
     ASSERT(conditionLock->isHeldByCurrentThread());
+
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
     // Dequeue one of the threads in the queue
     if (!queue->IsEmpty()) {
@@ -191,13 +196,15 @@ void Condition::Signal(Lock* conditionLock) {
         scheduler->ReadyToRun(thread);
     }
 
-    
+    (void)interrupt->SetLevel(oldLevel);
 
 }
 void Condition::Broadcast(Lock* conditionLock) {
 
     // check if calling thread holds the lock
     ASSERT(conditionLock->isHeldByCurrentThread());
+
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
     // Dequeue all threads in the queue one-by-one
     while (!queue->IsEmpty()) {
@@ -206,5 +213,6 @@ void Condition::Broadcast(Lock* conditionLock) {
     }
 
     // Wakeup each thread
+    (void)interrupt->SetLevel(oldLevel);
 
  }
