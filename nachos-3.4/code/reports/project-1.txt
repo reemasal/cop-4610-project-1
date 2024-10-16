@@ -4,6 +4,7 @@ Reema Salem
 Dasie Perez
 
 Exercise 1
+Status: Completed
 
 While running the threadtest program, each thread in the nachos command would output the same value, while incrementing the value by 1 until reaching 5, leaving the final value as seen as 5. 
 
@@ -12,9 +13,44 @@ When incorporating the semaphores, as each thread would increment by 1, the valu
 Using -rs would randomize the execution sequence of the threads.
 
 Exercise 2
+Status: Completed
 
 Locks are similar to semaphores but differ when handling the threads. The main difference lies in the number of threads allowed to hold the resource at once. Locks hold one thread at a time, while semaphores can hold multiple.
 
 Exercise 3
+Status: Completed
 
 A condition helps manage threads by making them wait in a queue until a specific event occurs. The destructor ensures resources like the waiting queue are cleaned up to prevent memory leaks. In Wait, a thread releases its lock, goes to sleep, and re-acquires the lock when it wakes up, allowing other threads to run in the meantime. Signal wakes one waiting thread, while Broadcast wakes them all up. Interrupts are temporarily disabled during these operations to avoid conflicts and ensure everything runs smoothly by ensuring atomicity, which establishes thread safety.
+
+Exercise 4:
+Status: Completed
+
+Description: 
+
+We have implemented the elevator functionality as specified in the project requirements. The elevator system allows for continuous movement between multiple floors, handles requests from passengers, and ensures passengers are picked up and dropped off at the correct floors. The implementation successfully integrates synchronization mechanisms to coordinate the actions of the elevator and passengers.
+
+Key Features Implemented:
+
+Elevator Movement:
+
+The elevator continuously moves between floors, simulating a delay of 50 ticks for each floor transition.
+It wraps around from the top floor back to the first floor, ensuring continuous service.
+Passenger Pickup and Drop-off:
+
+Passengers can request the elevator from any floor to go to another floor.
+When the elevator arrives at a floor, it picks up waiting passengers and drops off passengers who have reached their destination.
+Synchronization mechanisms (mutexes and condition variables) ensure proper handling of requests and avoid race conditions.
+
+Approach and Solution:
+
+We used a struct (ElevatorThread) to track the elevator’s state, including the total number of floors, the current floor, and the number of passengers inside.
+We implemented a loop that simulates the elevator’s continuous movement. The elevator checks for requests at each floor, simulates a delay of 50 ticks (using std::this_thread::sleep_for), and moves to the next floor.
+Passengers are represented by PersonThread structs and are created through the function ArrivingGoingFromTo(). Each passenger thread waits for the elevator at a specific floor and notifies the system of their request.
+Synchronization: We used std::mutex and std::condition_variable to manage the interaction between passenger requests and elevator actions, ensuring that passengers can board and exit the elevator safely.
+Testing and Validation:
+
+We conducted multiple tests to verify the functionality of the elevator system:
+Scenario 1: Single passenger requests the elevator from one floor to another. The elevator correctly picks up the passenger and drops them off at the destination.
+Scenario 2: Multiple passengers request the elevator from different floors, and the elevator correctly serves each request.
+Scenario 3: Passengers request the elevator while it is in motion, and the system correctly handles all requests without missing any.
+Conclusion: The implementation of the elevator system meets the project requirements and successfully handles the core functionalities. The code is efficient, well-structured, and effectively uses synchronization to avoid race conditions and ensure smooth operation. We have documented our approach and provided the code in elevator.cpp, elevator.h, and the test setup in main.cpp.
