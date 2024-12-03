@@ -109,7 +109,7 @@ int doFork(int functionAddr) {
     // 1. Check if sufficient memory exists to create new process
     // currentThread->space->GetNumPages() <= mm->GetFreePageCount()
     // if check fails, return -1
-    if (currentThread->space->GetNumPages() > mm->GetFreePageCount()) {
+    if (currentThread->space->GetNumPages() >= mm->GetFreePageCount()) {
       printf("Process [%d] does not have enough memory", pid);
       return -1;
     }
@@ -164,46 +164,49 @@ int doFork(int functionAddr) {
 int doExec(char* filename) {
 
     // Use progtest.cc:StartProcess() as a guide
+    int pid = currentThread->space->pcb->pid;
+    printf("System Call: [%d] invoked [Exec]\n", pid);
 
     // 1. Open the file and check validity
-    // OpenFile *executable = fileSystem->Open(filename);
-    // AddrSpace *space;
+    OpenFile *executable = fileSystem->Open(filename);
+    AddrSpace *space;
 
-    // if (executable == NULL) {
-    //     printf("Unable to open file %s\n", filename);
-    //     return -1;
-    // }
+    if (executable == NULL) {
+        printf("Unable to open file %s\n", filename);
+        return -1;
+    }
 
     // 2. Delete current address space but store current PCB first if using in Step 5.
-    // PCB* pcb = currentThread->space->pcb;
-    // delete currentThread->space;
+    PCB* pcb = currentThread->space->pcb;
+    delete currentThread->space;
 
     // 3. Create new address space
-    // space = new AddrSpace(executable);
+    space = new AddrSpace(executable);
 
-    // 4.     delete executable;			// close file
+    // 4. close file
+    delete executable;
 
     // 5. Check if Addrspace creation was successful
-    // if(space->valid != true) {
-    // printf("Could not create AddrSpace\n");
-    //     return -1;
-    // }
+    if(space->valid != true) {
+    printf("Could not create AddrSpace\n");
+        return -1;
+    }
 
     // 6. Set the PCB for the new addrspace - reused from deleted address space
-    // space->pcb = pcb;
+    space->pcb = pcb;
 
     // 7. Set the addrspace for currentThread
-    // currentThread->space = space;
+    currentThread->space = space;
 
     // 8. Initialize registers for new addrspace
-    //  space->InitRegisters();		// set the initial register values
+     space->InitRegisters();		// set the initial register values
 
     // 9. Initialize the page table
-    // space->RestoreState();		// load page table register
+    space->RestoreState();		// load page table register
 
     // 10. Run the machine now that all is set up
-    // machine->Run();			// jump to the user progam
-    // ASSERT(FALSE); // Execution nevere reaches here
+    machine->Run();			// jump to the user progam
+    ASSERT(FALSE); // Execution nevere reaches here
 
     return 0;
 }
@@ -212,36 +215,42 @@ int doExec(char* filename) {
 int doJoin(int pid) {
 
     // 1. Check if this is a valid pid and return -1 if not
-    // PCB* joinPCB = pcbManager->GetPCB(pid);
-    // if (pcb == NULL) return -1;
+    PCB* joinPCB = pcbManager->GetPCB(currentThread->space->pcb->pid);
+    if (joinPCB == NULL) return -1;
+
+    printf("System Call: [%d] invoked [Join]\n", currentThread->space->pcb->pid);
 
     // 2. Check if pid is a child of current process
-    // PCB* pcb = currentThread->space->pcb;
-    // if (pcb != joinPCB->parent) return -1;
+    PCB* pcb = currentThread->space->pcb;
+    if (pcb != joinPCB->parent) return -1;
 
     // 3. Yield until joinPCB has not exited
-    // while(!joinPCB->hasExited) currentThread->Yield();
+    while(!joinPCB->HasExited()) currentThread->Yield();
 
     // 4. Store status and delete joinPCB
-    // int status = joinPCB->exitStatus;
-    // delete joinPCB;
+    int status = joinPCB->exitStatus;
+    delete joinPCB;
 
-    // 5. return status;
+    // 5. 
+    return status;
 
 }
 
 
 int doKill (int pid) {
 
+    int currentPID = currentThread->space->pcb->pid;
+    printf("System Call: [%d] invoked [Kill]\n", currentPID);
+
     // 1. Check if the pid is valid and if not, return -1
-    // PCB* joinPCB = pcbManager->GetPCB(pid);
-    // if (pcb == NULL) return -1;
+    PCB* targetPCB = pcbManager->GetPCB(pid);
+    if (targetPCB == NULL) return -1;
 
     // 2. IF pid is self, then just exit the process
-    // if (pcb == currentThread->space->pcb) {
-    //         doExit(0);
-    //         return 0;
-    // }
+    if (targetPCB == currentThread->space->pcb) {
+      doExit(0);
+      return 0;
+    }
 
     // 3. Valid kill, pid exists and not self, do cleanup similar to Exit
     // However, change references from currentThread to the target thread
@@ -249,13 +258,21 @@ int doKill (int pid) {
 
     // 4. Set thread to be destroyed.
     // scheduler->RemoveThread(pcb->thread);
+    int removeThread = scheduler->RemoveThread(targetPCB->thread);
+
+    if (removeThread == -1) {
+      return -1;
+    }
 
     // 5. return 0 for success!
+    return 0;
 }
 
 
 
 void doYield() {
+    int pid = currentThread->space->pcb->pid;
+    printf("System Call: [%d] invoked [Yield]\n", pid);
     currentThread->Yield();
 }
 
@@ -326,7 +343,7 @@ ExceptionHandler(ExceptionType which)
 	DEBUG('a', "Shutdown, initiated by user program.\n");
    	interrupt->Halt();
     } else  if ((which == SyscallException) && (type == SC_Exit)) {
-        DEBUG('a', "Exit system call initiated by user program with status %d. \n", machine->ReadRegister(4));
+        // DEBUG('a', "Exit system call initiated by user program with status %d. \n", machine->ReadRegister(4));
         // Implement Exit system call
         doExit(machine->ReadRegister(4));
     } else if ((which == SyscallException) && (type == SC_Fork)) {

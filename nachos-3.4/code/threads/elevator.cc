@@ -53,12 +53,12 @@ void ArrivingGoingFromTo(int atFloor, int toFloor) {
     NotifyElevator();
 
     // Wait for the elevator to arrive at the current floor
-    WaitForElevatorArrival(person.atFloor, nullptr);
+    WaitForElevatorArrival(person.atFloor, NULL);
 
     printf("Person %d got into the elevator on floor %d.\n", person.id, atFloor);
 
     // Wait for the elevator to reach the destination floor
-    WaitForElevatorToReachFloor(person.toFloor, nullptr);
+    WaitForElevatorToReachFloor(person.toFloor, NULL);
 
     printf("Person %d got out of the elevator on floor %d.\n", person.id, toFloor);
 }
