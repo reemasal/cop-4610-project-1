@@ -2,4 +2,4 @@
 
 Reema Salem (Fork, Exit)
 
-Found this project to be incredibly hard. 
+I found this project to be incredibly hard. Implementing Fork required duplicating the parent's address space, which was riddled with issues like memory allocation errors, and debugging behaviors during context switches. I also ran into issues with getting the testing to work. Overall I think this assignment had a lot of gaps with someone that is unfamiliar with the project will 100% have trouble in implementing, such as myself.
